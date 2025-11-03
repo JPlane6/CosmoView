@@ -11,28 +11,6 @@ CosmoView is an iOS app that lets users explore nearby stars and view NASA’s A
 - Fetches NASA’s APOD when online and displays title, image, and explanation; if APOD is unavailable the app presents a friendly fallback message.
 - Clean, responsive UI implemented in SwiftUI using `@StateObject` and `@MainActor` view models to avoid threading issues with UI updates.
 
-## Files and structure
-The project follows a clear folder structure so each responsibility is isolated and easy to find:
-
-
-CosmoViewProject/
-├─ Package.swift
-├─ Sources/
-│  └─ CosmoView/
-│     ├─ CosmoViewApp.swift           # App entry (TabView for Stars & APOD)
-│     ├─ Models/
-│     │  ├─ CelestialObject.swift     # Model for a star (id, name, type, distanceLY)
-│     │  └─ APOD.swift                # Model for NASA APOD response
-│     ├─ Services/
-│     │  ├─ StarDataManager.swift     # Offline hardcoded star catalog and loader
-│     │  └─ NASAService.swift         # Async APOD network fetch (optional API key)
-│     ├─ ViewModels/
-│     │  ├─ SkyViewModel.swift        # @MainActor ObservableObject for stars
-│     │  └─ APODViewModel.swift       # @MainActor ObservableObject for APOD
-│     └─ Views/
-│        ├─ ContentView.swift         # Stars list UI (search + sort + offline banner)
-│        └─ APODView.swift            # APOD UI (async image + explanation + offline banner)
-
 ### Key files explained
 - **CelestialObject.swift** — simple `Identifiable` model used by SwiftUI `ForEach`. Distances are stored in light years (LY) to match common user expectations.
 - **StarDataManager.swift** — contains a hardcoded list of nearby stars (50–100 real entries in the shipped version). The `loadStars()` method returns this list immediately and the manager is intentionally offline-first so the app never depends on unstable external endpoints.
