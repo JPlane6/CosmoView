@@ -3,43 +3,52 @@
 #### Video Demo: <https://youtu.be/r5RYdrH-mKc>
 
 ## Overview
-CosmoView is an iOS app that lets users explore nearby stars and view NASA’s Astronomy Picture of the Day (APOD) — and it works even when the device is offline. The app focuses on a clean SwiftUI interface, a small built-in star catalog for reliable offline use, and an optional online APOD fetch when internet access is available. CosmoView was built as a CS50 final project and demonstrates the use of Swift 6, SwiftUI, `@MainActor`-isolated view models, and async/await network calls with safe offline fallbacks.
+CosmoView is an iOS app designed to give users an interactive and educational experience exploring nearby stars and NASA’s Astronomy Picture of the Day (APOD). The app emphasizes both functionality and reliability, ensuring that even when offline, users can explore a curated catalog of nearby stars. The project was built using Swift 6 and SwiftUI for a modern, responsive interface, and it leverages `@MainActor`-isolated view models to safely update the UI asynchronously. CosmoView was developed as a final project for CS50 and demonstrates proficiency in Swift, SwiftUI, asynchronous programming, and offline-first application design.
 
 ## What the app does
-- Displays a searchable, sortable list of nearby stars (name + distance in light years).
-- Uses a locally embedded catalog of real nearby stars so the app is fully functional without internet.
-- Fetches NASA’s APOD when online and displays title, image, and explanation; if APOD is unavailable the app presents a friendly fallback message.
-- Clean, responsive UI implemented in SwiftUI using `@StateObject` and `@MainActor` view models to avoid threading issues with UI updates.
+- Displays a list of nearby stars with their names, types, and distances in light years. The list is searchable and sortable, allowing users to easily explore stars based on proximity.
+- Provides NASA’s Astronomy Picture of the Day, fetched from the NASA API when online. When the network is unavailable, the app gracefully presents a fallback message so that users know APOD is temporarily unavailable.
+- The star data is stored locally within the app, allowing the star list feature to function completely offline. This ensures that the app remains fully functional even without internet connectivity.
+- Uses a clean and intuitive SwiftUI interface, with observable view models managing the presentation of both stars and APOD content.
 
-### Key files explained
-- **CelestialObject.swift** — simple `Identifiable` model used by SwiftUI `ForEach`. Distances are stored in light years (LY) to match common user expectations.
-- **StarDataManager.swift** — contains a hardcoded list of nearby stars (50–100 real entries in the shipped version). The `loadStars()` method returns this list immediately and the manager is intentionally offline-first so the app never depends on unstable external endpoints.
-- **NASAService.swift** — a small async/await wrapper around `URLSession` that fetches APOD JSON from the NASA API. The service is optional; if no API key is provided or the network call fails, APODViewModel falls back to an offline message.
-- **SkyViewModel.swift** & **APODViewModel.swift** — `@MainActor` `ObservableObject` view models that publish changes to the UI safely. They use async tasks to load data and set `@Published` properties on the main actor to avoid SwiftUI concurrency warnings.
-- **ContentView.swift** — main stars UI. Features a searchable list, toggleable distance sort, and an offline banner that appears only when necessary. Uses `.task` to request star data via the view model.
-- **APODView.swift** — presents APOD content with `AsyncImage` for smooth image loading. Shows a fallback message and placeholder UI when offline or when APOD is unavailable.
+## Files and their roles
+- **CosmoViewApp.swift**: This is the main entry point for the app. It initializes the SwiftUI App lifecycle and sets up the main navigation or tab structure for switching between the stars list and the APOD view.
+- **Models**:  
+  - `CelestialObject.swift` defines the structure of a star or celestial object, including its name, type, distance from Earth in light years, and a unique identifier.  
+  - `APOD.swift` defines the structure of NASA’s Astronomy Picture of the Day response, including the title, image URL, date, and explanation.
+- **Services**:  
+  - `StarDataManager.swift` provides the hardcoded offline catalog of nearby stars. This list includes 50–100 real stars with accurate distances and allows the app to function without any online dependency.  
+  - `NASAService.swift` handles the asynchronous fetching of APOD data using `URLSession`. If the device is offline or the API call fails, the service returns `nil` and the app shows a fallback message.
+- **ViewModels**:  
+  - `SkyViewModel.swift` manages the star data for the SwiftUI views. It uses `@Published` properties and `@MainActor` isolation to safely update the user interface without threading issues.  
+  - `APODViewModel.swift` manages the APOD data, handling async fetch calls and updating the view with the latest picture or an offline fallback message.
+- **Views**:  
+  - `ContentView.swift` displays the star list. It shows nearby stars in order of distance, allows searching, and displays an offline indicator when network access is unavailable.  
+  - `APODView.swift` displays the Astronomy Picture of the Day. It uses `AsyncImage` to load images smoothly and includes a fallback text and placeholder image when the API is unreachable.
 
 ## Design choices and rationale
-- **Offline-first approach:** several public star catalogs are either very large or unreliable as single raw URLs. For a CS50 final project we need reliability and reproducibility. Shipping a curated local catalog ensures the app always works during demos and grading without network variability.
-- **SwiftUI + @MainActor:** Swift 6 enforces main-actor isolation for UI-updating types. I used `@MainActor` on view models and async/await patterns to keep code modern and minimize threading/bindings bugs (the common “publishing from background threads” issue).
-- **Async/await for network calls:** APOD fetching uses async/await for clarity and correctness. The app decodes JSON using `JSONDecoder` and performs decoding on the main actor when needed to respect any main-actor-isolated models.
-- **Small, focused feature set:** The app demonstrates clear functionality (stars + APOD) with polished UI rather than a broad, half-finished feature set. This keeps the project within scope and suitable for a graded final.
+- **Offline-first approach**: Shipping a local catalog of stars ensures that the app functions reliably for grading and user testing without depending on external APIs or internet access. It also allows users to explore stars even in remote areas without connectivity.  
+- **SwiftUI + @MainActor**: To adhere to Swift 6 concurrency rules, view models are marked with `@MainActor`, and all UI updates are performed on the main actor. This prevents common runtime warnings about publishing changes from background threads and ensures smooth updates in SwiftUI.  
+- **Asynchronous APOD fetch**: While the star list is offline, the APOD feature demonstrates handling of asynchronous network calls. The app uses modern async/await patterns with completion handlers that respect main actor isolation.  
+- **Focused scope**: The app’s core features (nearby stars + APOD) are fully implemented, polished, and reliable. This focus avoids half-finished features and keeps the project within scope for a CS50 final submission.
 
-## How to run
-1. Open the project in Xcode (macOS; Xcode 15+ recommended for Swift 6 compatibility).
-2. Select an iOS simulator or your device (you can run on-device with a free Apple ID but provisioning expires weekly).
-3. Build and run. The star list appears immediately from the embedded catalog. Tap the APOD tab to fetch the daily image if online.
-4. To test offline behavior, disable network access (or block the APOD fetch) — the app will continue to show stars and present a fallback APOD message.
+## How to run the app
+1. Open the project in Xcode (Xcode 15+ recommended).  
+2. Select an iOS simulator or a connected device. Running on-device with a free Apple ID works, but provisioning will expire weekly.  
+3. Build and run the project. The star list appears immediately from the embedded catalog. Users can browse, search, and sort stars.  
+4. Tap the APOD view to fetch NASA’s Astronomy Picture of the Day. If offline or the API is unavailable, a fallback message appears.  
 
-## Notes about submission / CS50
-- You do not need an Apple Developer Program account to run the app locally or to produce the demo video. You only need the paid account if you want to distribute via the App Store or TestFlight.
-- During Testing, NASA APOD was offline.
+## Notes about submission
+- The project includes a `README.md` and a demonstration video. For CS50, submit both via `submit50`.  
+- No Apple Developer Program account is required to run or demo the app. The project can be tested fully locally.  
+- The hardcoded star catalog ensures reliable functionality during grading.  
 
 ## Future improvements
-- Add more stars from a hosted JSON catalog and implement incremental download/caching to combine an online data source with offline fallback.
-- Add constellation grouping, visualization map (sky coordinates), and deep links to external resources.
-- Add user preferences (distance threshold, units: LY/parsec) and Core Data / SwiftData optional persistence if the catalog is updated frequently.
+- Incorporate a hosted star catalog to allow dynamic updates while maintaining offline fallback.  
+- Add constellation grouping or a 3D star map visualization.  
+- Implement user preferences (distance threshold, units like LY or parsec) and optional persistent storage via SwiftData or Core Data.  
+- Add notifications for APOD updates or featured stars of the week.  
 
-## License & Acknowledgements
-- CosmoView is open for personal/educational use. If you reuse code or data from third parties (e.g., NASA APOD, star catalogs), follow their terms (NASA APOD requires attribution; star catalog sources should be credited).
-- APOD: data provided by NASA API. Replace `YOUR_API_KEY` in `NASAService.swift` with your own key for live APOD access.
+## License & acknowledgements
+- CosmoView is intended for educational and personal use. Any third-party data (NASA APOD, star catalogs) must be credited according to their respective licenses.  
+- APOD data comes from NASA API and requires an API key for live fetching. Replace `YOUR_API_KEY` in `NASAService.swift` with your own key.  
